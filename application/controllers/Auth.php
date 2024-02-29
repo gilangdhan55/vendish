@@ -30,8 +30,12 @@ class Auth extends RestController {
 	
 		// Validasi form menggunakan library CodeIgniter
 		$this->form_validation->set_data((array)$input);
-		$this->form_validation->set_rules('email', 'Email', 'required|valid_email');
-		$this->form_validation->set_rules('password', 'Password', 'required');
+		$this->form_validation->set_rules('username', 'username', 'required',[
+			'required' => 'Username Wajib di isi'
+		]);
+		$this->form_validation->set_rules('password', 'Password', 'required', [
+			'required' => 'Password Wajib di isi'
+		]);
 
 		if ($this->form_validation->run() == FALSE) { 
 
@@ -41,10 +45,10 @@ class Auth extends RestController {
 						'message' => $validationErrors
 					], 400 ); 
         } else { 
-			$email		= $input->email;
-			$password	= $input->password;
+			$username		= $input->username;
+			$password		= $input->password;
 			 
-            $data		= $this->Auth_Model->getData($email); 
+            $data		= $this->Auth_Model->getData($username); 
 
 			if(!$data){
 				$this->response( [
@@ -53,7 +57,11 @@ class Auth extends RestController {
 				], 404 );
 			}else{
 				$date	= new DateTime();
-				if(!password_verify($password, $data->password)){
+
+				$iat	= $date->getTimestamp();
+				$exp	=  $date->getTimestamp() + (60 * 60);
+				// if(!password_verify($password, $data->password)){
+				if($password != $data->password){
 					$this->response( [
 						'status' => false,
 						'message' => 'Password atau email salah'
@@ -61,8 +69,8 @@ class Auth extends RestController {
 				}else{ 
 					$createToken		= [
 						'status' 	=> true,
-						'iat'		=> $date->getTimestamp(),
-						'exp'		=> $date->getTimestamp() + (60 * 3),
+						'iat'		=> $iat,
+						'exp'		=> $exp,
 						'data' 		=> $data
 					];
 				 
@@ -71,15 +79,16 @@ class Auth extends RestController {
 					$response = [
 						'message'	=> 'Login Berhasil', 
 						'status' 	=> true,
+						'iat'		=> $iat,
+						'exp'		=> $exp,
 						'token'		=> $token,
 						'result'	=> [
-							'id'	=> $data->id,
-							'name'	=> $data->name,
-							'email'	=> $data->email
+							'master_user_id'	=> $data->master_user_id,
+							'fullname'			=> $data->fullname,
+							'username'			=> $data->username
 						],
 					];
-
-					
+ 
 					$this->response($response, 200);
 
 					 

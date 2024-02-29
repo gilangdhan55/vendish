@@ -69,7 +69,7 @@
         let formLogin       = await getForm(); 
 
         const validasi      = await validasiform(formLogin);
-        
+        console.log(validasi)
         const loginProsess  = await on_login(formLogin);  
 
         
@@ -162,6 +162,11 @@
 
 
     function shownotifsucces(response){
+        // Mendapatkan waktu saat ini
+        const currentTime = new Date();
+ 
+        const expirationTime = new Date(currentTime.getTime() + 10 * 60 * 1000);
+
         const Toast = Swal.mixin({
             toast: true,
             position: "top-right",
@@ -172,14 +177,24 @@
                 toast.onmouseenter = Swal.stopTimer;
                 toast.onmouseleave = Swal.resumeTimer;
             }
-            });
-            Toast.fire({
-            icon: "success",
-            title: response.message
-            }).then((result) => { 
-                console.log(JSON.stringify(response))
-                // localStorage.setItem('coba', JSON.stringify(response));
-            window.location.href = '<?= base_url('dashboard') ?>'; //localStorage.setItem('jwtToken', token);
+        });
+
+
+        Toast.fire({
+        icon: "success",
+        title: response.message
+        }).then((result) => {  
+
+            // // // Menyimpan token di dalam cookies dengan waktu kedaluwarsa 10 menit
+            // document.cookie = `token=${response.token}; path=/; expires=${expirationTime.toUTCString()}`;
+
+            // // // Menyimpan data user atau informasi lainnya di dalam cookies dengan waktu kedaluwarsa 10 menit
+            // document.cookie = `data=${JSON.stringify(response.result)}; path=/; expires=${expirationTime.toUTCString()}`;
+
+            // pakai localStorage karna lebih aman
+            localStorage.setItem('session', JSON.stringify(response));
+ 
+            window.location.href = '<?= base_url('dashboard') ?>';  
         });
     }
 
